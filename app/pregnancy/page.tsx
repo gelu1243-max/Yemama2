@@ -7,7 +7,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Home, Calendar, User, Plus, Heart, TrendingUp } from 'lucide-react'
+import { Progress } from '@/components/ui/progress'
+import { TrackingModeToggle } from '@/components/tracking-mode-toggle'
+import { MobileNav } from '@/components/mobile-nav'
+import { User, Plus, Heart, TrendingUp } from 'lucide-react'
 
 interface PregnancyData {
   id: string
@@ -22,6 +25,7 @@ interface PregnancyData {
 export default function PregnancyPage() {
   const [user, setUser] = useState<any>(null)
   const [pregnancyData, setPregnancyData] = useState<PregnancyData | null>(null)
+  const [mode, setMode] = useState<'period' | 'pregnancy'>('pregnancy')
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
@@ -36,6 +40,21 @@ export default function PregnancyPage() {
         }
 
         setUser(authUser)
+
+        const { data: profileData } = await supabase
+          .from('user_profiles')
+          .select('tracking_type')
+          .eq('user_id', authUser.id)
+          .single()
+
+        if (profileData?.tracking_type === 'period') {
+          setMode('period')
+        }
+
+        const localMode = typeof window !== 'undefined' ? localStorage.getItem('yemama-tracking-mode') : null
+        if (localMode === 'period' || localMode === 'pregnancy') {
+          setMode(localMode)
+        }
 
         const { data: pregData } = await supabase
           .from('pregnancy_data')
@@ -79,10 +98,11 @@ export default function PregnancyPage() {
 
   if (!pregnancyData) {
     return (
-      <div className="min-h-screen bg-background pb-24">
-        <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-border">
-          <div className="max-w-6xl mx-auto px-4 py-6">
-            <h1 className="text-3xl font-bold text-foreground">Pregnancy Journey</h1>
+      <div className="min-h-screen pb-24">
+        <div className="sticky top-0 z-40 border-b border-white/50 bg-white/70 backdrop-blur-md">
+          <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-4">
+            <h1 className="text-xl font-semibold text-foreground">Pregnancy Journey</h1>
+            <TrackingModeToggle userId={user?.id} mode={mode} onModeChange={setMode} />
           </div>
         </div>
 
@@ -100,25 +120,7 @@ export default function PregnancyPage() {
           </Card>
         </div>
 
-        {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-border">
-          <div className="max-w-6xl mx-auto px-4 py-3">
-            <div className="flex justify-around items-center">
-              <Link href="/dashboard" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary">
-                <Home className="w-6 h-6" />
-                <span className="text-xs font-semibold">Home</span>
-              </Link>
-              <Link href="/calendar" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary">
-                <Calendar className="w-6 h-6" />
-                <span className="text-xs font-semibold">Calendar</span>
-              </Link>
-              <Link href="/profile" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary">
-                <User className="w-6 h-6" />
-                <span className="text-xs font-semibold">Profile</span>
-              </Link>
-            </div>
-          </div>
-        </div>
+        <MobileNav active="dashboard" />
       </div>
     )
   }
@@ -127,15 +129,49 @@ export default function PregnancyPage() {
   const progress = (currentWeek / 40) * 100
   const weeksRemaining = 40 - currentWeek
 
+  if (mode === 'period') {
+    return (
+      <div className="min-h-screen pb-24">
+        <div className="sticky top-0 z-40 border-b border-white/50 bg-white/70 backdrop-blur-md">
+          <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-4">
+            <h1 className="text-xl font-semibold text-foreground">Pregnancy Journey</h1>
+            <TrackingModeToggle userId={user?.id} mode={mode} onModeChange={setMode} />
+          </div>
+        </div>
+        <div className="mx-auto w-full max-w-2xl px-4 py-10">
+          <Card className="glass-card border-0 p-8 text-center">
+            <h2 className="text-2xl font-semibold">Pregnancy tools are hidden in Cycle Mode</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Switch back to Pregnancy Mode to continue this view.</p>
+            <div className="mt-5">
+              <Link href="/dashboard">
+                <Button>Go to Dashboard</Button>
+              </Link>
+            </div>
+          </Card>
+        </div>
+        <MobileNav active="dashboard" />
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-foreground">Your Pregnancy Journey</h1>
-          <p className="text-muted-foreground text-sm">
-            Week {currentWeek} of 40 • {weeksRemaining} weeks to go
-          </p>
+    <div className="min-h-screen pb-24">
+      <div className="sticky top-0 z-40 border-b border-white/50 bg-white/70 backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">Your Pregnancy Journey</h1>
+            <p className="text-muted-foreground text-sm">
+              Week {currentWeek} of 40 • {weeksRemaining} weeks to go
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <TrackingModeToggle userId={user?.id} mode={mode} onModeChange={setMode} />
+            <Link href="/profile">
+              <Button variant="outline" size="icon" className="h-9 w-9 rounded-full">
+                <User className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -170,12 +206,7 @@ export default function PregnancyPage() {
                   <h3 className="font-bold text-foreground">Pregnancy Progress</h3>
                   <span className="text-sm font-semibold text-primary">{progress.toFixed(0)}%</span>
                 </div>
-                <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-primary to-accent transition-all"
-                    style={{ width: `${progress}%` }}
-                  ></div>
-                </div>
+                <Progress value={progress} className="h-4" />
               </div>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
@@ -274,25 +305,7 @@ export default function PregnancyPage() {
         </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-border">
-        <div className="max-w-6xl mx-auto px-4 py-3">
-          <div className="flex justify-around items-center">
-            <Link href="/dashboard" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary">
-              <Home className="w-6 h-6" />
-              <span className="text-xs font-semibold">Home</span>
-            </Link>
-            <Link href="/calendar" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary">
-              <Calendar className="w-6 h-6" />
-              <span className="text-xs font-semibold">Calendar</span>
-            </Link>
-            <Link href="/profile" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary">
-              <User className="w-6 h-6" />
-              <span className="text-xs font-semibold">Profile</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      <MobileNav active="dashboard" />
     </div>
   )
 }

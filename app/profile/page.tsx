@@ -7,11 +7,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Home, Calendar, User, LogOut, Settings } from 'lucide-react'
+import { TrackingModeToggle } from '@/components/tracking-mode-toggle'
+import { MobileNav } from '@/components/mobile-nav'
+import { User, LogOut, Settings } from 'lucide-react'
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
+  const [mode, setMode] = useState<'period' | 'pregnancy'>('period')
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
@@ -34,6 +37,14 @@ export default function ProfilePage() {
           .single()
 
         setProfile(profileData)
+        if (profileData?.tracking_type) {
+          setMode(profileData.tracking_type)
+        }
+
+        const localMode = typeof window !== 'undefined' ? localStorage.getItem('yemama-tracking-mode') : null
+        if (localMode === 'period' || localMode === 'pregnancy') {
+          setMode(localMode)
+        }
       } catch (err) {
         console.error('Error fetching profile:', err)
       } finally {
@@ -63,18 +74,19 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-foreground">Profile</h1>
+    <div className="min-h-screen pb-24">
+      <div className="sticky top-0 z-40 border-b border-white/50 bg-white/70 backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-2xl items-center justify-between px-4 py-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Account</p>
+            <h1 className="text-xl font-semibold text-foreground">Profile</h1>
+          </div>
+          <TrackingModeToggle userId={user?.id} mode={mode} onModeChange={setMode} />
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        {/* Profile Card */}
-        <Card className="p-8 border-0 mb-6 bg-gradient-to-br from-purple-50 to-pink-50">
+      <div className="mx-auto w-full max-w-2xl px-4 py-6">
+        <Card className="glass-card mb-6 border-0 bg-gradient-to-br from-cyan-50 to-pink-50 p-8">
           <div className="flex items-start gap-6">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-3xl">
               {user?.email?.charAt(0).toUpperCase()}
@@ -85,18 +97,17 @@ export default function ProfilePage() {
               </h2>
               <p className="text-muted-foreground mb-3">{user?.email}</p>
               <div className="inline-block px-3 py-1 bg-primary/20 rounded-full text-sm font-semibold text-primary">
-                {profile?.tracking_type === 'pregnancy' ? '🤰 Pregnancy Tracking' : '📅 Period Tracking'}
+                {mode === 'pregnancy' ? 'Pregnancy Tracking' : 'Cycle Tracking'}
               </div>
             </div>
           </div>
         </Card>
 
-        {/* Health Settings */}
         <div className="space-y-4 mb-8">
           <h3 className="text-xl font-bold text-foreground">Health Settings</h3>
-          <Card className="p-6 border-0">
+          <Card className="glass-card border-0 p-6">
             <div className="space-y-4">
-              {profile?.tracking_type === 'period' && (
+              {mode === 'period' && (
                 <>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
@@ -124,11 +135,11 @@ export default function ProfilePage() {
         <div className="space-y-4 mb-8">
           <h3 className="text-xl font-bold text-foreground">Quick Stats</h3>
           <div className="grid grid-cols-2 gap-4">
-            <Card className="p-4 border-0 bg-gradient-to-br from-blue-50 to-purple-50 text-center">
+            <Card className="glass-card border-0 bg-gradient-to-br from-blue-50 to-purple-50 p-4 text-center">
               <div className="text-2xl font-bold text-blue-600 mb-1">365+</div>
               <p className="text-sm text-muted-foreground">Days Tracked</p>
             </Card>
-            <Card className="p-4 border-0 bg-gradient-to-br from-pink-50 to-purple-50 text-center">
+            <Card className="glass-card border-0 bg-gradient-to-br from-pink-50 to-purple-50 p-4 text-center">
               <div className="text-2xl font-bold text-primary mb-1">12</div>
               <p className="text-sm text-muted-foreground">Cycles Tracked</p>
             </Card>
@@ -138,7 +149,7 @@ export default function ProfilePage() {
         {/* Account Management */}
         <div className="space-y-4 mb-8">
           <h3 className="text-xl font-bold text-foreground">Account</h3>
-          <Card className="p-6 border-0 space-y-3">
+          <Card className="glass-card border-0 space-y-3 p-6">
             <Button variant="outline" className="w-full justify-start">
               <Settings className="w-4 h-4 mr-2" />
               Notification Settings
@@ -160,8 +171,7 @@ export default function ProfilePage() {
           </Card>
         </div>
 
-        {/* About */}
-        <Card className="p-6 border-0 bg-gradient-to-br from-purple-50 to-pink-50 mb-8">
+        <Card className="glass-card mb-8 border-0 bg-gradient-to-br from-purple-50 to-pink-50 p-6">
           <h3 className="font-bold text-foreground mb-2">About yemama</h3>
           <p className="text-sm text-muted-foreground mb-4">
             yemama is your compassionate companion for tracking pregnancy and menstrual cycles. Built with care for every woman&apos;s unique journey.
@@ -176,8 +186,7 @@ export default function ProfilePage() {
           </div>
         </Card>
 
-        {/* Illustration */}
-        <Card className="overflow-hidden border-0 mb-8">
+        <Card className="glass-card mb-8 overflow-hidden border-0 p-0">
           <Image
             src="/images/profile-mother.jpg"
             alt="Mother and child bond"
@@ -188,25 +197,7 @@ export default function ProfilePage() {
         </Card>
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-border">
-        <div className="max-w-6xl mx-auto px-4 py-3">
-          <div className="flex justify-around items-center">
-            <Link href="/dashboard" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary">
-              <Home className="w-6 h-6" />
-              <span className="text-xs font-semibold">Home</span>
-            </Link>
-            <Link href="/calendar" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary">
-              <Calendar className="w-6 h-6" />
-              <span className="text-xs font-semibold">Calendar</span>
-            </Link>
-            <Link href="/profile" className="flex flex-col items-center gap-1 text-primary">
-              <User className="w-6 h-6" />
-              <span className="text-xs font-semibold">Profile</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      <MobileNav active="profile" />
     </div>
   )
 }

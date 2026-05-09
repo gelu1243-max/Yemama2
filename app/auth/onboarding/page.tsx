@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,15 @@ export default function OnboardingPage() {
     setTrackingType(type)
     setStep(2)
   }
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    const presetMode = searchParams.get('mode')
+    if (presetMode === 'period' || presetMode === 'pregnancy') {
+      setTrackingType(presetMode)
+      setStep(2)
+    }
+  }, [])
 
   const handleComplete = async () => {
     if (!trackingType) return
@@ -99,30 +108,36 @@ export default function OnboardingPage() {
             <h2 className="text-2xl font-bold text-foreground mb-6">Customize Your Cycle</h2>
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
+                <label htmlFor="cycle-length" className="block text-sm font-medium text-foreground mb-2">
                   Average Cycle Length (days)
                 </label>
                 <input
+                  id="cycle-length"
                   type="number"
                   value={cycleLengthInput}
                   onChange={(e) => setCycleLengthInput(e.target.value)}
                   min="21"
                   max="35"
+                  placeholder="28"
+                  title="Average cycle length in days"
                   className="w-full px-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <p className="text-xs text-muted-foreground mt-2">Typical range: 21-35 days</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
+                <label htmlFor="period-length" className="block text-sm font-medium text-foreground mb-2">
                   Average Period Length (days)
                 </label>
                 <input
+                  id="period-length"
                   type="number"
                   value={periodLengthInput}
                   onChange={(e) => setPeriodLengthInput(e.target.value)}
                   min="2"
                   max="7"
+                  placeholder="5"
+                  title="Average period length in days"
                   className="w-full px-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <p className="text-xs text-muted-foreground mt-2">Typical range: 2-7 days</p>
