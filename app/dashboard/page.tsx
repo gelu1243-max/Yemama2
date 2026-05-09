@@ -20,6 +20,10 @@ import {
   ArrowRight,
   Sparkles,
   User,
+  Siren,
+  Stethoscope,
+  Apple,
+  TestTube,
 } from 'lucide-react'
 
 interface CycleLog {
@@ -134,6 +138,7 @@ export default function DashboardPage() {
   ovulationEnd.setDate(ovulationEnd.getDate() - 12)
 
   const currentWeek = pregnancyData?.current_week || 20
+  const isLatePregnancy = mode === 'pregnancy' && currentWeek >= 32
   const trimester = currentWeek < 14 ? 'First' : currentWeek < 28 ? 'Second' : 'Third'
   const progress = Math.min(100, Math.round((currentWeek / 40) * 100))
   const fruitByWeek = currentWeek < 8 ? 'Blueberry' : currentWeek < 14 ? 'Lemon' : currentWeek < 20 ? 'Mango' : currentWeek < 28 ? 'Eggplant' : 'Watermelon'
@@ -158,6 +163,20 @@ export default function DashboardPage() {
       </div>
 
       <div className="mx-auto w-full max-w-4xl space-y-5 px-4 py-6">
+        {isLatePregnancy ? (
+          <Link href="/emergency">
+            <Card className="border-red-500 bg-red-50 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-red-700">Labor Mode Priority</p>
+                  <p className="text-xs text-red-600">Emergency button moved to top for faster access.</p>
+                </div>
+                <Siren className="h-5 w-5 text-red-600" />
+              </div>
+            </Card>
+          </Link>
+        ) : null}
+
         {mode === 'period' ? (
           <>
             <Card className="glass-card border-0 bg-gradient-to-br from-cyan-50 to-pink-50 p-6">
@@ -208,9 +227,10 @@ export default function DashboardPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               {[
                 ['Calendar & Predictions', '/calendar', CalendarCheck],
-                ['Symptom Journal', '/tracking/diet', NotebookPen],
-                ['Mood + Pattern Trends', '/tracking/sleep', ChartLine],
-                ['Health Metrics', '/tracking/heart', HeartPulse],
+                ['Symptom Journal', '/tracking/logs', NotebookPen],
+                ['Mood + Pattern Trends', '/tracking/logs', ChartLine],
+                ['Health Metrics', '/tracking/logs', HeartPulse],
+                ['Nutrition', '/nutrition', Apple],
               ].map(([title, href, Icon]) => (
                 <Link key={title as string} href={href as string}>
                   <Card className="glass-card border-0 p-4 transition hover:-translate-y-0.5">
@@ -264,8 +284,10 @@ export default function DashboardPage() {
               {[
                 ['Pregnancy Timeline', '/pregnancy', Baby],
                 ['Appointment Reminders', '/calendar', AlarmClock],
-                ['Symptoms & Notes', '/tracking/sleep', NotebookPen],
-                ['Wellness Metrics', '/tracking/heart', ChartLine],
+                ['Symptoms & Notes', '/tracking/logs', NotebookPen],
+                ['Wellness Metrics', '/tracking/logs', ChartLine],
+                ['Doctor Finder', '/doctor', Stethoscope],
+                ['Labs & Results', '/labs', TestTube],
               ].map(([title, href, Icon]) => (
                 <Link key={title as string} href={href as string}>
                   <Card className="glass-card border-0 p-4 transition hover:-translate-y-0.5">
@@ -287,10 +309,13 @@ export default function DashboardPage() {
             <Link href="/calendar">
               <Button size="sm">Open Calendar</Button>
             </Link>
-            <Link href={mode === 'period' ? '/tracking/glucose' : '/pregnancy'}>
+            <Link href={mode === 'period' ? '/tracking/logs' : '/pregnancy'}>
               <Button size="sm" variant="outline">
                 {mode === 'period' ? 'Log Today' : 'View Weekly Update'}
               </Button>
+            </Link>
+            <Link href="/tracking/logs">
+              <Button size="sm" variant="outline">Get Advice</Button>
             </Link>
             <Link href="/education">
               <Button size="sm" variant="outline">Learn & Insights</Button>

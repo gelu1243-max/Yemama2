@@ -2,9 +2,9 @@
 
 import { ReactNode } from 'react'
 import Link from 'next/link'
-import { CalendarDays, Home, UserRound } from 'lucide-react'
+import { CalendarDays, Home, Stethoscope, UserRound } from 'lucide-react'
 
-type NavKey = 'dashboard' | 'calendar' | 'profile'
+type NavKey = 'dashboard' | 'calendar' | 'profile' | 'doctor'
 
 interface MobileNavProps {
   active: NavKey
@@ -32,6 +32,7 @@ export function MobileNav({ active }: MobileNavProps) {
       <nav className="mx-auto flex w-full max-w-3xl items-center justify-around px-4 py-2">
         <NavItem href="/dashboard" active={active === 'dashboard'} icon={<Home className="h-5 w-5" />} label="Home" />
         <NavItem href="/calendar" active={active === 'calendar'} icon={<CalendarDays className="h-5 w-5" />} label="Calendar" />
+        <NavItem href="/doctor" active={active === 'doctor'} icon={<Stethoscope className="h-5 w-5" />} label="Doctor" />
         <NavItem href="/profile" active={active === 'profile'} icon={<UserRound className="h-5 w-5" />} label="Profile" />
       </nav>
     </div>

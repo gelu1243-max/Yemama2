@@ -44,9 +44,30 @@ export interface HealthMetric {
   id: string
   user_id: string
   date: string
-  metric_type: 'heart_rate' | 'blood_pressure' | 'glucose' | 'steps' | 'sleep'
+  metric_type: 'heart_rate' | 'blood_pressure' | 'glucose' | 'steps' | 'sleep' | 'sleep_duration' | 'energy_level' | 'mood'
   value: number
   unit?: string
+  notes?: string
+  created_at: string
+}
+
+export interface FoodLog {
+  id: string
+  user_id: string
+  date: string
+  food_name: string
+  portion?: string
+  estimated_calories?: number
+  quality?: 'good' | 'moderate' | 'needs_improvement'
+  created_at: string
+}
+
+export interface MedicalResult {
+  id: string
+  user_id: string
+  file_url: string
+  file_type?: string
+  doctor_id?: string
   notes?: string
   created_at: string
 }

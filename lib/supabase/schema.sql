@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS health_metrics (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   date DATE NOT NULL,
-  metric_type TEXT CHECK (metric_type IN ('heart_rate', 'blood_pressure', 'glucose', 'steps', 'sleep')),
+  metric_type TEXT CHECK (metric_type IN ('heart_rate', 'blood_pressure', 'glucose', 'steps', 'sleep', 'sleep_duration', 'energy_level', 'mood')),
   value DECIMAL(10,2),
   unit TEXT,
   notes TEXT,
@@ -110,3 +110,43 @@ CREATE POLICY "Educational content is public" ON educational_content FOR SELECT 
 CREATE INDEX idx_cycle_logs_user_date ON cycle_logs(user_id, date DESC);
 CREATE INDEX idx_health_metrics_user_date ON health_metrics(user_id, date DESC);
 CREATE INDEX idx_symptoms_user_date ON symptoms(user_id, date DESC);
+
+-- Doctor directory / interactions
+CREATE TABLE IF NOT EXISTS doctors (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  specialty TEXT,
+  city TEXT,
+  online_available BOOLEAN DEFAULT false,
+  phone TEXT,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS medical_results (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  file_url TEXT NOT NULL,
+  file_type TEXT,
+  doctor_id UUID REFERENCES doctors(id),
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS food_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  date DATE NOT NULL,
+  food_name TEXT NOT NULL,
+  portion TEXT,
+  estimated_calories INTEGER,
+  quality TEXT CHECK (quality IN ('good', 'moderate', 'needs_improvement')),
+  created_at TIMESTAMP DEFAULT now()
+);
+
+ALTER TABLE medical_results ENABLE ROW LEVEL SECURITY;
+ALTER TABLE food_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their medical results" ON medical_results FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert their medical results" ON medical_results FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can view their food logs" ON food_logs FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert their food logs" ON food_logs FOR INSERT WITH CHECK (auth.uid() = user_id);

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
+import { GlobalBackButton } from '@/components/global-back-button'
+import { FloatingEmergencyButton } from '@/components/floating-emergency-button'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -36,7 +38,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-background">
       <body className="font-sans antialiased bg-background">
+        <GlobalBackButton />
         {children}
+        <FloatingEmergencyButton />
       </body>
     </html>
   )

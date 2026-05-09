@@ -113,7 +113,7 @@ export default function PregnancyPage() {
             <p className="text-muted-foreground mb-6">
               Add your pregnancy information to start tracking your baby's development and your health
             </p>
-            <Button className="bg-gradient-to-r from-primary to-accent text-white">
+            <Button className="bg-gradient-to-r from-primary to-accent text-white" onClick={() => router.push('/auth/onboarding?mode=pregnancy')}>
               <Plus className="w-4 h-4 mr-2" />
               Add Pregnancy Info
             </Button>
@@ -244,7 +244,7 @@ export default function PregnancyPage() {
                     {pregnancyData.baby_height || 'Not recorded'} cm
                   </div>
                 </div>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={() => router.push('/tracking/logs')}>
                   <Plus className="w-4 h-4 mr-2" />
                   Update Baby Measurements
                 </Button>
@@ -268,17 +268,17 @@ export default function PregnancyPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <Button variant="outline" className="justify-start">
+                  <Button variant="outline" className="justify-start" onClick={() => router.push('/tracking/logs')}>
                     <Heart className="w-4 h-4 mr-2" />
                     Heart Health
                   </Button>
-                  <Button variant="outline" className="justify-start">
+                  <Button variant="outline" className="justify-start" onClick={() => router.push('/tracking/logs')}>
                     <TrendingUp className="w-4 h-4 mr-2" />
                     Weight Tracking
                   </Button>
                 </div>
 
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={() => router.push('/tracking/logs')}>
                   <Plus className="w-4 h-4 mr-2" />
                   Log Health Update
                 </Button>

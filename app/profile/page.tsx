@@ -123,7 +123,7 @@ export default function ProfilePage() {
                   </div>
                 </>
               )}
-              <Button variant="outline" className="w-full mt-4">
+              <Button variant="outline" className="w-full mt-4" onClick={() => router.push('/tracking/logs')}>
                 <Settings className="w-4 h-4 mr-2" />
                 Edit Settings
               </Button>
@@ -150,14 +150,14 @@ export default function ProfilePage() {
         <div className="space-y-4 mb-8">
           <h3 className="text-xl font-bold text-foreground">Account</h3>
           <Card className="glass-card border-0 space-y-3 p-6">
-            <Button variant="outline" className="w-full justify-start">
+            <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/calendar')}>
               <Settings className="w-4 h-4 mr-2" />
               Notification Settings
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/education')}>
               Privacy & Security
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button variant="outline" className="w-full justify-start" onClick={() => router.push('/labs')}>
               Data Export
             </Button>
             <Button
@@ -177,10 +177,10 @@ export default function ProfilePage() {
             yemama is your compassionate companion for tracking pregnancy and menstrual cycles. Built with care for every woman&apos;s unique journey.
           </p>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => router.push('/doctor')}>
               Help & Support
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => router.push('/education')}>
               Privacy Policy
             </Button>
           </div>

@@ -30,7 +30,7 @@ export default function StepsTrackingPage() {
             <p className="text-muted-foreground">Steps today (Goal: 10,000)</p>
           </div>
         </Card>
-        <Button className="w-full bg-gradient-to-r from-primary to-accent text-white py-6 text-lg mb-4">
+        <Button className="w-full bg-gradient-to-r from-primary to-accent text-white py-6 text-lg mb-4" onClick={() => router.push('/tracking/logs')}>
           <Plus className="w-5 h-5 mr-2" /> Log Steps
         </Button>
       </div>

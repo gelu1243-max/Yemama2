@@ -8,9 +8,13 @@ import { Card } from '@/components/ui/card'
 
 export default function OnboardingPage() {
   const [trackingType, setTrackingType] = useState<'period' | 'pregnancy' | null>(null)
+  const [isPregnant, setIsPregnant] = useState<boolean | null>(null)
   const [cycleLengthInput, setCycleLengthInput] = useState('28')
   const [periodLengthInput, setPeriodLengthInput] = useState('5')
+  const [pregnancyStartDate, setPregnancyStartDate] = useState('')
+  const [pregnancyWeek, setPregnancyWeek] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [step, setStep] = useState(1)
   const router = useRouter()
   const supabase = createClient()
@@ -33,23 +37,46 @@ export default function OnboardingPage() {
     if (!trackingType) return
 
     setLoading(true)
+    setError('')
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('No user found')
 
-      const { error } = await supabase.from('user_profiles').insert({
+      const { error } = await supabase.from('user_profiles').upsert({
         user_id: user.id,
         tracking_type: trackingType,
         cycle_length: parseInt(cycleLengthInput),
         period_length: parseInt(periodLengthInput),
-      })
+      }, { onConflict: 'user_id' })
 
       if (error) throw error
+
+      if (trackingType === 'pregnancy') {
+        const weekValue = Number(pregnancyWeek || 0)
+        if (!pregnancyStartDate && !weekValue) {
+          throw new Error('Provide pregnancy start date or current week.')
+        }
+        const startDate = pregnancyStartDate || (() => {
+          const d = new Date()
+          d.setDate(d.getDate() - weekValue * 7)
+          return d.toISOString().split('T')[0]
+        })()
+        const dueDate = new Date(startDate)
+        dueDate.setDate(dueDate.getDate() + 280)
+
+        await supabase.from('pregnancy_data').upsert({
+          user_id: user.id,
+          conception_date: startDate,
+          current_week: weekValue || Math.floor((Date.now() - new Date(startDate).getTime()) / (7 * 24 * 60 * 60 * 1000)),
+          due_date: dueDate.toISOString().split('T')[0],
+        }, { onConflict: 'user_id' })
+      }
 
       router.push('/dashboard')
       router.refresh()
     } catch (err: any) {
       console.error('Onboarding error:', err)
+      setError(err?.message || 'Unable to complete onboarding.')
     } finally {
       setLoading(false)
     }
@@ -74,7 +101,7 @@ export default function OnboardingPage() {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card
-                onClick={() => handleTrackingTypeSelect('period')}
+                onClick={() => { setIsPregnant(false); handleTrackingTypeSelect('period') }}
                 className="p-6 cursor-pointer hover:shadow-lg transition-all border-2 hover:border-primary"
               >
                 <div className="text-center">
@@ -87,7 +114,7 @@ export default function OnboardingPage() {
               </Card>
 
               <Card
-                onClick={() => handleTrackingTypeSelect('pregnancy')}
+                onClick={() => { setIsPregnant(true); handleTrackingTypeSelect('pregnancy') }}
                 className="p-6 cursor-pointer hover:shadow-lg transition-all border-2 hover:border-primary"
               >
                 <div className="text-center">
@@ -159,6 +186,7 @@ export default function OnboardingPage() {
                   {loading ? 'Setting up...' : 'Get Started'}
                 </Button>
               </div>
+              {error ? <p className="text-sm text-red-600">{error}</p> : null}
             </div>
           </Card>
         )}
@@ -169,8 +197,31 @@ export default function OnboardingPage() {
             <h2 className="text-2xl font-bold text-foreground mb-6">Start Your Pregnancy Journey</h2>
             <div className="space-y-6">
               <p className="text-muted-foreground">
-                You&apos;ll be able to log pregnancy details like due date, health metrics, and baby development from your dashboard.
+                Are you pregnant? If yes, add start date or current week to activate Pregnancy Mode timeline.
               </p>
+              <div className="flex gap-2">
+                <Button variant={isPregnant ? 'default' : 'outline'} type="button" onClick={() => setIsPregnant(true)}>Yes</Button>
+                <Button variant={isPregnant === false ? 'default' : 'outline'} type="button" onClick={() => { setIsPregnant(false); setTrackingType('period') }}>No</Button>
+              </div>
+              {isPregnant ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input
+                    type="date"
+                    value={pregnancyStartDate}
+                    onChange={(e) => setPregnancyStartDate(e.target.value)}
+                    className="w-full rounded-lg border border-input px-4 py-2"
+                  />
+                  <input
+                    type="number"
+                    value={pregnancyWeek}
+                    onChange={(e) => setPregnancyWeek(e.target.value)}
+                    placeholder="Current week"
+                    min="1"
+                    max="40"
+                    className="w-full rounded-lg border border-input px-4 py-2"
+                  />
+                </div>
+              ) : null}
               <div className="flex gap-4">
                 <Button
                   onClick={() => setStep(1)}
@@ -187,6 +238,7 @@ export default function OnboardingPage() {
                   {loading ? 'Setting up...' : 'Get Started'}
                 </Button>
               </div>
+              {error ? <p className="text-sm text-red-600">{error}</p> : null}
             </div>
           </Card>
         )}
