@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { TrackingModeToggle } from '@/components/tracking-mode-toggle'
 import { MobileNav } from '@/components/mobile-nav'
+import { LanguageSwitcher } from '@/components/language-switcher'
+import { useI18n } from '@/lib/i18n'
 import {
   CalendarCheck,
   ChartLine,
@@ -109,12 +111,15 @@ export default function DashboardPage() {
     checkAuth()
   }, [])
 
+  const { t } = useI18n()
+  const d = t.dashboard
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin text-4xl mb-4">🌸</div>
-          <p className="text-muted-foreground">Loading your dashboard...</p>
+          <p className="text-muted-foreground">{d.loading}</p>
         </div>
       </div>
     )
@@ -149,9 +154,10 @@ export default function DashboardPage() {
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Dashboard</p>
-            <h1 className="text-xl font-semibold text-foreground">{mode === 'period' ? 'Cycle Care' : 'Pregnancy Care'}</h1>
+            <h1 className="text-xl font-semibold text-foreground">{mode === 'period' ? d.title_period : d.title_pregnancy}</h1>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageSwitcher compact />
             <TrackingModeToggle userId={user?.id} mode={mode} onModeChange={setMode} />
             <Link href="/profile">
               <Button variant="outline" size="icon" className="h-9 w-9 rounded-full">
@@ -168,8 +174,8 @@ export default function DashboardPage() {
             <Card className="border-red-500 bg-red-50 p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-red-700">Labor Mode Priority</p>
-                  <p className="text-xs text-red-600">Emergency button moved to top for faster access.</p>
+                  <p className="text-sm font-semibold text-red-700">{d.labor_mode}</p>
+                  <p className="text-xs text-red-600">{d.labor_desc}</p>
                 </div>
                 <Siren className="h-5 w-5 text-red-600" />
               </div>
@@ -180,20 +186,20 @@ export default function DashboardPage() {
         {mode === 'period' ? (
           <>
             <Card className="glass-card border-0 bg-gradient-to-br from-cyan-50 to-pink-50 p-6">
-              <p className="soft-pill mb-3 inline-flex">Period Tracking Mode</p>
-              <h2 className="text-2xl font-semibold text-foreground">Your cycle at a glance</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Predictions update as you log symptoms and period flow.</p>
+              <p className="soft-pill mb-3 inline-flex">{d.period_mode}</p>
+              <h2 className="text-2xl font-semibold text-foreground">{d.cycle_glance}</h2>
+              <p className="mt-2 text-sm text-muted-foreground">{d.cycle_desc}</p>
               <div className="mt-5 grid grid-cols-3 gap-3 text-center">
                 <div className="rounded-2xl bg-white/70 p-3">
-                  <p className="text-[11px] text-muted-foreground">Today</p>
+                  <p className="text-[11px] text-muted-foreground">{d.today}</p>
                   <p className="text-lg font-semibold">Day {cycleDay}</p>
                 </div>
                 <div className="rounded-2xl bg-white/70 p-3">
-                  <p className="text-[11px] text-muted-foreground">Next Period</p>
+                  <p className="text-[11px] text-muted-foreground">{d.next_period}</p>
                   <p className="text-lg font-semibold">{daysToNextPeriod}d</p>
                 </div>
                 <div className="rounded-2xl bg-white/70 p-3">
-                  <p className="text-[11px] text-muted-foreground">Cycle Avg</p>
+                  <p className="text-[11px] text-muted-foreground">{d.cycle_avg}</p>
                   <p className="text-lg font-semibold">{cycleLength}d</p>
                 </div>
               </div>
@@ -203,7 +209,7 @@ export default function DashboardPage() {
               <Card className="glass-card border-0 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold">Fertility Window</p>
+                    <p className="text-sm font-semibold">{d.fertility_window}</p>
                     <p className="text-xs text-muted-foreground">
                       {ovulationStart.toLocaleDateString()} - {ovulationEnd.toLocaleDateString()}
                     </p>
@@ -214,9 +220,9 @@ export default function DashboardPage() {
               <Card className="glass-card border-0 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold">Cycle Insight</p>
+                    <p className="text-sm font-semibold">{d.cycle_insight}</p>
                     <p className="text-xs text-muted-foreground">
-                      {cycleLogs.length > 20 ? 'Your cycle looks consistent this month.' : 'Log more days to unlock deeper insights.'}
+                      {cycleLogs.length > 20 ? d.insight_consistent : d.insight_log_more}
                     </p>
                   </div>
                   <Sparkles className="h-5 w-5 text-accent" />
@@ -226,11 +232,11 @@ export default function DashboardPage() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               {[
-                ['Calendar & Predictions', '/calendar', CalendarCheck],
-                ['Symptom Journal', '/tracking/logs', NotebookPen],
-                ['Mood + Pattern Trends', '/tracking/logs', ChartLine],
-                ['Health Metrics', '/tracking/logs', HeartPulse],
-                ['Nutrition', '/nutrition', Apple],
+                [d.links.calendar, '/calendar', CalendarCheck],
+                [d.links.symptom, '/tracking/logs', NotebookPen],
+                [d.links.mood, '/tracking/logs', ChartLine],
+                [d.links.health, '/tracking/logs', HeartPulse],
+                [d.links.nutrition, '/nutrition', Apple],
               ].map(([title, href, Icon]) => (
                 <Link key={title as string} href={href as string}>
                   <Card className="glass-card border-0 p-4 transition hover:-translate-y-0.5">
@@ -247,12 +253,12 @@ export default function DashboardPage() {
         ) : (
           <>
             <Card className="glass-card border-0 bg-gradient-to-br from-emerald-50 to-cyan-50 p-6">
-              <p className="soft-pill mb-3 inline-flex">Pregnancy Tracking Mode</p>
-              <h2 className="text-2xl font-semibold text-foreground">Week {currentWeek} of your journey</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Baby size this week is about a {fruitByWeek.toLowerCase()}.</p>
+              <p className="soft-pill mb-3 inline-flex">{d.pregnancy_mode}</p>
+              <h2 className="text-2xl font-semibold text-foreground">{d.week_journey.replace('{week}', String(currentWeek))}</h2>
+              <p className="mt-2 text-sm text-muted-foreground">{d.baby_size_text.replace('{fruit}', fruitByWeek.toLowerCase())}</p>
               <div className="mt-4">
                 <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{trimester} Trimester</span>
+                  <span>{trimester} {d.trimester}</span>
                   <span>{progress}%</span>
                 </div>
                 <Progress value={progress} className="h-3 bg-white/70" />
@@ -263,8 +269,8 @@ export default function DashboardPage() {
               <Card className="glass-card border-0 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold">Weekly Development</p>
-                    <p className="text-xs text-muted-foreground">New movement patterns and stronger reflexes this week.</p>
+                    <p className="text-sm font-semibold">{d.weekly_dev}</p>
+                    <p className="text-xs text-muted-foreground">{d.weekly_dev_desc}</p>
                   </div>
                   <Baby className="h-5 w-5 text-primary" />
                 </div>
@@ -272,8 +278,8 @@ export default function DashboardPage() {
               <Card className="glass-card border-0 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold">Daily Tip</p>
-                    <p className="text-xs text-muted-foreground">Try a 20-minute walk and hydrate with 8-10 glasses today.</p>
+                    <p className="text-sm font-semibold">{d.daily_tip}</p>
+                    <p className="text-xs text-muted-foreground">{d.daily_tip_desc}</p>
                   </div>
                   <HeartPulse className="h-5 w-5 text-accent" />
                 </div>
@@ -282,12 +288,12 @@ export default function DashboardPage() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               {[
-                ['Pregnancy Timeline', '/pregnancy', Baby],
-                ['Appointment Reminders', '/calendar', AlarmClock],
-                ['Symptoms & Notes', '/tracking/logs', NotebookPen],
-                ['Wellness Metrics', '/tracking/logs', ChartLine],
-                ['Doctor Finder', '/doctor', Stethoscope],
-                ['Labs & Results', '/labs', TestTube],
+                [d.links.pregnancy, '/pregnancy', Baby],
+                [d.links.appointment, '/calendar', AlarmClock],
+                [d.links.symptoms_notes, '/tracking/logs', NotebookPen],
+                [d.links.wellness, '/tracking/logs', ChartLine],
+                [d.links.doctor, '/doctor', Stethoscope],
+                [d.links.labs, '/labs', TestTube],
               ].map(([title, href, Icon]) => (
                 <Link key={title as string} href={href as string}>
                   <Card className="glass-card border-0 p-4 transition hover:-translate-y-0.5">
@@ -304,21 +310,21 @@ export default function DashboardPage() {
         )}
 
         <Card className="glass-card border-0 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Quick actions</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">{d.quick_actions}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Link href="/calendar">
-              <Button size="sm">Open Calendar</Button>
+              <Button size="sm">{d.open_calendar}</Button>
             </Link>
             <Link href={mode === 'period' ? '/tracking/logs' : '/pregnancy'}>
               <Button size="sm" variant="outline">
-                {mode === 'period' ? 'Log Today' : 'View Weekly Update'}
+                {mode === 'period' ? d.log_today : d.view_weekly}
               </Button>
             </Link>
             <Link href="/tracking/logs">
-              <Button size="sm" variant="outline">Get Advice</Button>
+              <Button size="sm" variant="outline">{d.get_advice}</Button>
             </Link>
             <Link href="/education">
-              <Button size="sm" variant="outline">Learn & Insights</Button>
+              <Button size="sm" variant="outline">{d.learn}</Button>
             </Link>
           </div>
         </Card>

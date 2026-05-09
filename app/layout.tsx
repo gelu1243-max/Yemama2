@@ -1,46 +1,36 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist } from 'next/font/google'
+import { Noto_Sans_Ethiopic } from 'next/font/google'
 import './globals.css'
 import { GlobalBackButton } from '@/components/global-back-button'
 import { FloatingEmergencyButton } from '@/components/floating-emergency-button'
+import { I18nProvider } from '@/lib/i18n'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
+const notoEthiopic = Noto_Sans_Ethiopic({ subsets: ['ethiopic'], variable: '--font-ethiopic', weight: ['400', '500', '600', '700'] })
 
 export const metadata: Metadata = {
   title: 'yemama - Track Your Health Journey',
   description: 'A compassionate pregnancy and period tracking app for every woman',
-  generator: 'v0.app',
   icons: {
     icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
+      { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
+      { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
     ],
     apple: '/apple-icon.png',
   },
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="bg-background">
+    <html lang="en" className={`bg-background ${geist.variable} ${notoEthiopic.variable}`}>
       <body className="font-sans antialiased bg-background">
-        <GlobalBackButton />
-        {children}
-        <FloatingEmergencyButton />
+        <I18nProvider>
+          <GlobalBackButton />
+          {children}
+          <FloatingEmergencyButton />
+        </I18nProvider>
       </body>
     </html>
   )
